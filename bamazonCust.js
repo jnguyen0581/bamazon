@@ -37,7 +37,7 @@ var products = [
 		id: 1,
 		name: 'Iphone 6',
         price: 300.00,
-        stock_quantity: 500, 
+        stock_quantity: 3, 
     
 	},
 
@@ -45,20 +45,44 @@ var products = [
 		id: 2,
 		name: 'Iphone 6Plus',
         price: 350.00,
-        stock_quantity: 500,
+        stock_quantity: 100,
 	},
 
 	{
 		id: 3,
 		name: 'Iphone 7',
         price: 400.00,
-        stock_quantity: 500,
+        stock_quantity: 25,
 	},
 	{
 		id: 4,
 		name: 'Iphone 7Plus',
         price: 450.00,
-        stock_quantity: 500,
+        stock_quantity: 13,
+	},
+	{
+		id: 5,
+		name: 'Iphone 7',
+        price: 400.00,
+        stock_quantity: 50,
+	},
+	{
+		id: 6,
+		name: 'Iphone X',
+        price: 800.00,
+        stock_quantity: 50,
+	},
+	{
+		id: 7,
+		name: 'Iphone xs',
+        price: 900.00,
+        stock_quantity: 25,
+	},
+	{
+		id: 8,
+		name: 'Iphone Xs case',
+        price: 15.00,
+        stock_quantity: 20,
 	}
 ];
 var start = () => {
