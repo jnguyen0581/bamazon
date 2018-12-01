@@ -18,109 +18,105 @@ var connection = mysql.createConnection({
   database: "bamazon_db"
 });
 
-connection.connect(function(error) {
-  if (error) throw error;
-  console.log("connected as id " + connection.threadId);
-  afterConnection();
-});
+connection.connect();
 
-function afterConnection() {
-  connection.query("SELECT * FROM products", function(error, request) {
-    if (error) throw error;
-    console.log(request);
-    connection.end();
+function start(){
+
+connection.query('SELECT * FROM products', function(err, res){
+  if(err) throw err;
+
+  console.log('Welcome to BAMazon')
+  console.log('----------------------------------------------------------------------------------------------------')
+
+  for(var i = 0; i<res.length;i++){
+    console.log("ID: " + res[i].item_id + " | " + "Product: " + res[i].product_name + " | " + "Department: " + res[i].department_name + " | " + "Price: " + res[i].price + " | " + "QTY: " + res[i].stock_quantity);
+    console.log('--------------------------------------------------------------------------------------------------')
+  }
+
+  console.log(' ');
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "id",
+      message: "What is the ID of the product you would like to purchase?",
+      validate: function(value){
+        if(isNaN(value) == false && parseInt(value) <= res.length && parseInt(value) > 0){
+          return true;
+        } else{
+          return false;
+        }
+      }
+    },
+    {
+      type: "input",
+      name: "qty",
+      message: "How much would you like to purchase?",
+      validate: function(value){
+        if(isNaN(value)){
+          return false;
+        } else{
+          return true;
+        }
+      }
+    }
+
+    ]).then(function(ans){
+      var whatToBuy = (ans.id)-1;
+      var howMuchToBuy = parseInt(ans.qty);
+      var grandTotal = parseFloat(((res[whatToBuy].price)*howMuchToBuy).toFixed(2));
+      console.log('Customer has selected: \n    item_id = '  + ans.id + '\n    quantity = ' + ans.qty);
+
+      if(res[whatToBuy].stock_quantity >= howMuchToBuy){
+       
+        connection.query("UPDATE products SET ? WHERE ?", [
+        {stock_quantity: (res[whatToBuy].stock_quantity - howMuchToBuy)},
+        {item_id: ans.id}
+        ], function(err, result){
+            if(err) throw err;
+            console.log("Success! Your total is $" + grandTotal.toFixed(2) + ". Your item(s) will be shipped to you in 2 business days.");
+        });
+
+        connection.query("SELECT * FROM departments", function(err, deptRes){
+          if(err) throw err;
+          var index
+          for(var i = 0; i < deptRes.length; i++){
+            if(deptRes[i].department_name === res[whatToBuy].department_name){
+              index = i;
+            }
+          }
+          
+          
+          connection.query("UPDATE departments SET ? WHERE ?", [
+          {total_sales: deptRes[index].total__sales + grandTotal},
+          {department_name: res[whatToBuy].department_name}
+          ], function(err, deptRes){
+              if(err) throw err;
+             
+          });
+        });
+
+      } else{
+        console.log("Sorry, there's not enough in stock!");
+      }
+
+      reprompt();
+    })
+})
+}
+
+
+function reprompt(){
+  inquirer.prompt([{
+    type: "confirm",
+    name: "reply",
+    message: "Would you like to purchase another item?"
+  }]).then(function(ans){
+    if(ans.reply){
+      start();
+    } else{
+      console.log("See you soon!");
+    }
   });
 }
-
-var products = [
-	{
-		id: 1,
-		name: 'Iphone 6',
-        price: 300.00,
-        stock_quantity: 3, 
-    
-	},
-
-	{
-		id: 2,
-		name: 'Iphone 6Plus',
-        price: 350.00,
-        stock_quantity: 100,
-	},
-
-	{
-		id: 3,
-		name: 'Iphone 7',
-        price: 400.00,
-        stock_quantity: 25,
-	},
-	{
-		id: 4,
-		name: 'Iphone 7Plus',
-        price: 450.00,
-        stock_quantity: 13,
-	},
-	{
-		id: 5,
-		name: 'Iphone 7',
-        price: 400.00,
-        stock_quantity: 50,
-	},
-	{
-		id: 6,
-		name: 'Iphone X',
-        price: 800.00,
-        stock_quantity: 50,
-	},
-	{
-		id: 7,
-		name: 'Iphone xs',
-        price: 900.00,
-        stock_quantity: 25,
-	},
-	{
-		id: 8,
-		name: 'Iphone Xs case',
-        price: 15.00,
-        stock_quantity: 20,
-	}
-];
-var start = () => {
-	// running this application will first display all the items available for sale. Include the ids, names, and prices of products for sale
-	displayProducts();
-	// app promt user
-	getUserAction();
-};
-
-var getUserAction = () => {
-	// the app should then promt users with two messages.
-	// the first should ask them the ID of the products they would like to buy
-	// The second message should ask how many units of the products they would like to buy.
-	inquirer
-		.prompt([
-			{
-				name: 'choice',
-				type: 'input',
-				message: 'please enter the ID of the product you wish to purchase: '
-			},
-			{
-				name: 'quantity',
-				type: 'input',
-				message: 'How many: '
-			}
-		]).then(answers => {
-			// safe guard that they enter an existing ID
-			// for loop, do a filter
-            // IF it's a correct answer promt them for quantity
-            
-            // 
-			
-		});
-}
-var displayProducts = () => {
-    // connect to the database
-    // select * from products
-	products.forEach((product) => console.log(product));
-};
 
 start();
